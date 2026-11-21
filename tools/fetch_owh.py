@@ -39,7 +39,8 @@ for line in pathlib.Path('tools/owh_urls.txt').read_text().splitlines():
     sections = [s for s in sections if s['blocks'] and not re.match(r'^(Sources|Related|More information|Did we answer|For more information)', s['q'])]
     words = sum(len(json.dumps(s).split()) for s in sections)
     (out / f'{slug}.json').write_text(json.dumps({'id': slug, 'category': cat, 'title': title, 'url': url,
-        'source': 'Office on Women\'s Health, U.S. Department of Health and Human Services (womenshealth.gov)',
+        'source': 'Office on Women\'s Health, U.S. Department of Health and Human Services (womenshealth.gov)', 'lang': 'en', 'publisher': 'OWH',
+        'attribution': 'U.S. federal government work in the public domain (womenshealth.gov). Not affiliated with or endorsed by the Office on Women\'s Health.', 'noTranslate': False,
         'reviewed': reviewed, 'sections': sections}, ensure_ascii=False, indent=1))
     report.append(f'OK {slug}: {len(sections)} sections, ~{words} words, reviewed {reviewed or "?"}')
     time.sleep(1)

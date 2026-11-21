@@ -11,7 +11,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: pip install beautifulsoup4
-      - run: python3 tools/fetch_owh.py
+      # each source may fail on its own; the build step keeps the last good copy
+      - continue-on-error: true
+        run: python3 tools/fetch_owh.py
+      - continue-on-error: true
+        run: PYTHONPATH=tools/sources python3 tools/sources/cdc.py
+      - continue-on-error: true
+        run: PYTHONPATH=tools/sources python3 tools/sources/medlineplus.py
+      - continue-on-error: true
+        run: PYTHONPATH=tools/sources python3 tools/sources/ods.py
+      - continue-on-error: true
+        run: PYTHONPATH=tools/sources python3 tools/sources/nhs.py
+        env:
+          NHS_API_KEY: ${{ secrets.NHS_API_KEY }}
       - run: python3 tools/build_content.py
       - name: Publish
         run: |

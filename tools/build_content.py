@@ -22,8 +22,9 @@ out = pathlib.Path('content'); out.mkdir(exist_ok=True)
 lib_path = out / 'library.json'
 old = {a['id']: a for a in json.loads(lib_path.read_text())['articles']} if lib_path.exists() else {}
 new, log = {}, []
-for f in sorted(pathlib.Path('raw/owh').glob('*.json')):
+for f in sorted(pathlib.Path('raw').glob('*/*.json')):
     d = json.loads(f.read_text())
+    for k, v in (('lang', 'en'), ('publisher', 'OWH'), ('noTranslate', False), ('attribution', '')): d.setdefault(k, v)
     if d['id'] in SKIP: continue
     d['sections'] = [{'q': clean(s['q']), 'blocks': [{'p': clean(b['p'])} if 'p' in b else {'ul': [clean(i) for i in b['ul']]} for b in s['blocks']]} for s in d['sections']]
     prev = old.get(d['id'])
@@ -38,13 +39,14 @@ for i, a in old.items():
     if i not in new:
         log.append(f"- KEPT previous `{i}`: not fetched this time")
         new[i] = a
-arts = sorted(new.values(), key=lambda a: (ORDER.index(a['category']), a['title']))
+PUB = ['OWH', 'NHS', 'CDC', 'MedlinePlus', 'NIH ODS']
+arts = sorted(new.values(), key=lambda a: (ORDER.index(a['category']), PUB.index(a.get('publisher', 'OWH')), a['title']))
 body = json.dumps({'articles': arts}, ensure_ascii=False, separators=(',', ':'))
 if not lib_path.exists() or lib_path.read_text() != body:
     lib_path.write_text(body)
     now = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%MZ')
     (out / 'meta.json').write_text(json.dumps({'version': now, 'sha256': hashlib.sha256(body.encode()).hexdigest(),
-                                               'articles': len(arts), 'format': 1}))
+                                               'articles': len(arts), 'format': 1, 'publishers': sorted({a.get('publisher', 'OWH') for a in arts})}))
     cl = out / 'CHANGELOG.md'
     cl.write_text(f"## {now}\n" + ('\n'.join(log) or '- formatting only') + '\n\n' + (cl.read_text() if cl.exists() else ''))
 print('\n'.join(log) or 'no change', '|', len(arts), 'articles')
