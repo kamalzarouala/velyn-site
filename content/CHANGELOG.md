@@ -1,3 +1,13 @@
+## 2026-11-21T23:45Z
+- ADDED `nhs-bacterial-vaginosis`: Bacterial vaginosis
+- ADDED `nhs-endometriosis`: Endometriosis
+- ADDED `nhs-heavy-periods`: Heavy periods
+- ADDED `nhs-miscarriage`: Miscarriage
+- ADDED `nhs-pre-eclampsia`: Pre-eclampsia
+- ADDED `nhs-pre-menstrual-syndrome`: PMS (premenstrual syndrome)
+- ADDED `nhs-thrush-in-men-and-women`: Thrush in men and women
+- ADDED `nhs-urinary-tract-infections-utis`: Urinary tract infections (UTIs)
+
 ## 2026-11-21T23:27Z
 - ADDED `cdc-alcohol-pregnancy`: About Alcohol Use During Pregnancy
 - ADDED `cdc-breastfeeding-facts`: About Breastfeeding
