@@ -1,0 +1,7 @@
+name: Site check
+on: workflow_dispatch
+jobs:
+  c:
+    runs-on: ubuntu-latest
+    steps:
+      - run: for u in "" privacy.html content/meta.json; do curl -s -o /dev/null -w "$u %{http_code}\n" https://kamalzarouala.github.io/velyn-site/$u; done
