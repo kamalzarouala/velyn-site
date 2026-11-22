@@ -21,7 +21,7 @@ jobs:
       - continue-on-error: true
         run: PYTHONPATH=tools/sources python3 tools/sources/ods.py
       - continue-on-error: true
-        run: PYTHONPATH=tools/sources python3 tools/sources/nhs_debug.py || true; PYTHONPATH=tools/sources python3 tools/sources/nhs.py
+        run: PYTHONPATH=tools/sources python3 tools/sources/nhs.py
         env:
           NHS_API_KEY: ${{ secrets.NHS_API_KEY }}
       - run: python3 tools/build_content.py

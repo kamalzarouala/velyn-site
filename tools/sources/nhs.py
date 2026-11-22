@@ -12,23 +12,23 @@ BASE = os.environ.get('NHS_API_BASE', 'https://int.api.service.nhs.uk/nhs-websit
 PAGES = [
     ('cycle', 'periods', ['conditions/periods', 'womens-health/periods']),
     ('cycle', 'heavy-periods', ['conditions/heavy-periods']),
-    ('cycle', 'period-pain', ['conditions/period-pain', 'conditions/periods/period-pain']),
-    ('cycle', 'stopped-or-missed-periods', ['conditions/stopped-or-missed-periods', 'conditions/periods/stopped-or-missed-periods']),
-    ('cycle', 'irregular-periods', ['conditions/irregular-periods', 'conditions/periods/irregular-periods']),
+    ('cycle', 'period-pain', ['symptoms/period-pain', 'conditions/period-pain']),
+    ('cycle', 'stopped-or-missed-periods', ['symptoms/missed-or-late-periods', 'conditions/stopped-or-missed-periods']),
+    ('cycle', 'irregular-periods', ['symptoms/irregular-periods', 'conditions/irregular-periods']),
     ('cycle', 'pre-menstrual-syndrome', ['conditions/pre-menstrual-syndrome']),
-    ('cycle', 'polycystic-ovary-syndrome', ['conditions/polycystic-ovary-syndrome-pcos', 'conditions/polycystic-ovary-syndrome']),
+    ('cycle', 'polycystic-ovary-syndrome', ['conditions/polycystic-ovary-syndrome-pcos', 'conditions/polycystic-ovary-syndrome', 'womens-health/polycystic-ovary-syndrome-pcos', 'conditions/polycystic-ovary-syndrome-pcos/symptoms']),
     ('cycle', 'endometriosis', ['conditions/endometriosis']),
-    ('body', 'vaginal-discharge', ['symptoms/vaginal-discharge', 'conditions/vaginal-discharge']),
+    ('body', 'vaginal-discharge', ['symptoms/vaginal-discharge', 'conditions/vaginal-discharge', 'womens-health/vaginal-discharge', 'symptoms/unusual-vaginal-discharge']),
     ('body', 'thrush-in-men-and-women', ['conditions/thrush-in-men-and-women']),
     ('body', 'bacterial-vaginosis', ['conditions/bacterial-vaginosis']),
     ('body', 'urinary-tract-infections-utis', ['conditions/urinary-tract-infections-utis']),
-    ('menopause', 'menopause', ['conditions/menopause', 'womens-health/menopause']),
+    ('menopause', 'menopause', ['conditions/menopause', 'menopause', 'womens-health/menopause', 'conditions/menopause/symptoms']),
     ('ttc', 'infertility', ['conditions/infertility']),
     ('pregnancy', 'ectopic-pregnancy', ['conditions/ectopic-pregnancy']),
     ('pregnancy', 'miscarriage', ['conditions/miscarriage']),
     ('pregnancy', 'pre-eclampsia', ['conditions/pre-eclampsia']),
     ('pregnancy', 'gestational-diabetes', ['conditions/gestational-diabetes']),
-    ('postpartum', 'post-natal-depression', ['mental-health/conditions/post-natal-depression', 'conditions/post-natal-depression']),
+    ('postpartum', 'post-natal-depression', ['mental-health/conditions/post-natal-depression', 'mental-health/conditions/post-natal-depression/overview', 'conditions/post-natal-depression', 'conditions/post-natal-depression/overview', 'mental-health/conditions/postnatal-depression']),
 ]
 
 
@@ -53,17 +53,52 @@ def html_of(text):
     return text if '<' in text[:200] else md.markdown(text)
 
 
-def collect(node, out, head=''):
-    """Walk the whole hasPart tree (any depth): headlines start sections, text/description becomes body."""
-    if isinstance(node, list):
-        for n in node: collect(n, out, head); return
-    if not isinstance(node, dict): return
-    h = node.get('headline') or (node.get('name') if node.get('@type') in ('WebPageElement', 'HealthTopicContent') else '')
-    if h: out.append(f'<h2>{h}</h2>')
-    t = node.get('text') or ''
-    if t: out.append(html_of(t))
-    for k in ('hasPart', 'mainEntityOfPage'):
-        if k in node: collect(node[k], out)
+ASPECT = {'Overview': '', 'Symptoms': 'Symptoms', 'Causes': 'Causes', 'Diagnosis': 'Diagnosis', 'Treatment': 'Treatment',
+          'Prevention': 'Prevention', 'LivingWith': 'Living with it', 'Prognosis': 'Outlook', 'RiskFactors': 'Risk factors',
+          'Complications': 'Complications', 'SelfCare': 'Self-care', 'ScreeningAndTests': 'Tests', 'Usage': 'How to use'}
+
+
+def texts(node):
+    """All text pieces below a node, in order (skips the Overview's one-word navigation tiles)."""
+    out = []
+    for p in (node.get('hasPart') or node.get('mainEntityOfPage') or []) if isinstance(node, dict) else []:
+        if not isinstance(p, dict): continue
+        if p.get('hasPart') or (isinstance(p.get('mainEntityOfPage'), list) and p['mainEntityOfPage']):
+            h = p.get('headline') or ''
+            if h: out.append(f'<h3>{h}</h3>')
+            out.extend(texts(p)); continue
+        t = (p.get('text') or '').strip()
+        if not t or ('<' not in t and len(t.split()) < 4): continue  # tiles like "Symptoms"
+        h = p.get('headline') or ''
+        if h and h != node.get('headline'): out.append(f'<h3>{h}</h3>')
+        out.append(html_of(t))
+    return out
+
+
+def page_html(d):
+    parts = []
+    hp = [p for p in (d.get('hasPart') or []) if isinstance(p, dict)]
+    if hp:  # condition pages: one HealthTopicContent per aspect
+        for p in hp:
+            asp = (p.get('hasHealthAspect') or '').rsplit('/', 1)[-1].replace('HealthAspect', '')
+            head = p.get('headline') or ASPECT.get(asp, asp)
+            body = texts(p)
+            if asp == 'Overview' and not body and p.get('description'):
+                body = [f"<p>{p['description']}</p>"]
+            if not body: continue
+            if head: parts.append(f'<h2>{head}</h2>')
+            parts.extend(body)
+    else:  # general pages: sections in mainEntityOfPage
+        for sec in d.get('mainEntityOfPage') or []:
+            if not isinstance(sec, dict): continue
+            head = sec.get('headline') or (sec.get('name') if sec.get('name') not in ('section heading', 'markdown') else '')
+            body = texts(sec)
+            if not body: continue
+            if head: parts.append(f'<h2>{head}</h2>')
+            parts.extend(body)
+    if not parts and d.get('description'):
+        parts.append(f"<p>{d['description']}</p>")
+    return ''.join(parts)
 
 
 def subpages(d):
@@ -86,10 +121,8 @@ def subpages(d):
 
 
 def sections(d):
-    parts = []; collect(d.get('hasPart', []), parts)
-    if not parts and d.get('description'): parts.append(f"<p>{d['description']}</p>")
-    secs = sections_from_html(BeautifulSoup(''.join(parts), 'html.parser'))
-    return [s for s in secs if s['blocks']]
+    secs = sections_from_html(BeautifulSoup(page_html(d), 'html.parser'))
+    return [x for x in secs if x['blocks']]
 
 
 if __name__ == '__main__':
