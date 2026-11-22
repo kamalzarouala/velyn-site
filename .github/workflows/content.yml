@@ -23,7 +23,9 @@ jobs:
       - continue-on-error: true
         run: PYTHONPATH=tools/sources python3 tools/sources/nhs.py
         env:
-          NHS_API_KEY: ${{ secrets.NHS_API_KEY }}
+          # Production key wins when present; otherwise the integration (test) key.
+          NHS_API_KEY: ${{ secrets.NHS_API_KEY_PROD || secrets.NHS_API_KEY }}
+          NHS_API_BASE: ${{ secrets.NHS_API_KEY_PROD && 'https://api.service.nhs.uk/nhs-website-content' || 'https://int.api.service.nhs.uk/nhs-website-content' }}
       - run: python3 tools/build_content.py
       - name: Publish
         run: |
