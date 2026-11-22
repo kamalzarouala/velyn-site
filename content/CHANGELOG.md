@@ -1,3 +1,11 @@
+## 2026-11-22T13:40Z
+- ADDED `mlp-period-pain-en`: Period Pain
+- ADDED `mlp-period-pain-es`: Dolor menstrual
+- ADDED `mlp-sexual-problems-en`: Sexual Problems in Women
+- ADDED `mlp-sexual-problems-es`: Problemas sexuales en las mujeres
+- ADDED `mlp-sti-en`: Sexually Transmitted Infections
+- ADDED `mlp-sti-es`: Infecciones de transmisión sexual
+
 ## 2026-11-22T07:06Z
 - ADDED `nhs-period-problems`: Period problems
 - ADDED `nhs-starting-periods`: Starting your periods
