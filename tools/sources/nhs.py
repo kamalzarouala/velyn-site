@@ -2,6 +2,7 @@
 Refreshed daily (NHS requires at least every 7 days). Attribution "Information from the NHS website".
 Shown unchanged and not translated. Runs only when the NHS_API_KEY secret is set."""
 import json, os, time
+import markdown as md
 from bs4 import BeautifulSoup
 from common import get, sections_from_html, write, words
 
@@ -25,7 +26,11 @@ for cat, slug in PAGES:
             if not isinstance(part, dict): continue
             head = part.get('headline') or part.get('name') or ''
             body = ''.join(p.get('text', '') for p in part.get('hasPart', []) if isinstance(p, dict)) or part.get('text', '')
+            if '<' not in body[:200]:  # the API sends most parts as Markdown
+                body = md.markdown(body)
             s = sections_from_html(BeautifulSoup(f'<h2>{head}</h2>{body}' if head else body, 'html.parser'))
+            if s and not s[0]['q'] and secs:  # a part without a headline continues the previous section
+                secs[-1]['blocks'].extend(s[0]['blocks']); s = s[1:]
             secs.extend(s)
         url = d.get('url', '').replace('nhswebsite-staging.nhs.uk', 'www.nhs.uk') or f'https://www.nhs.uk/conditions/{slug}/'
         art = {'id': f'nhs-{slug}', 'category': cat, 'title': d.get('name', slug), 'url': url, 'lang': 'en', 'publisher': 'NHS',

@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: pip install beautifulsoup4
+      - run: pip install beautifulsoup4 markdown
       # each source may fail on its own; the build step keeps the last good copy
       - continue-on-error: true
         run: python3 tools/fetch_owh.py
