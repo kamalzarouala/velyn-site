@@ -1,0 +1,28 @@
+name: NHS dump
+on: workflow_dispatch
+jobs:
+  d:
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          KEY: ${{ secrets.NHS_API_KEY }}
+        run: |
+          for p in conditions/periods conditions/infertility conditions/gestational-diabetes; do
+            curl -s -H "apikey: $KEY" "https://int.api.service.nhs.uk/nhs-website-content/$p" -o o.json
+            echo "=== $p"
+            python3 - <<'PY'
+          import json
+          d=json.load(open('o.json'))
+          print('keys',list(d.keys()))
+          def walk(x,depth=0,path=''):
+              if depth>3: return
+              if isinstance(x,dict):
+                  print('  '*depth+path, {k:(v if isinstance(v,str) and len(v)<90 else type(v).__name__) for k,v in x.items() if k in ('@type','name','headline','url','identifier','text')})
+                  for k in ('hasPart','mainEntityOfPage','relatedLink','significantLink'):
+                      if k in x: walk(x[k],depth+1,k)
+              elif isinstance(x,list):
+                  for i in x[:8]: walk(i,depth,path)
+          walk(d)
+          PY
+            sleep 8
+          done
