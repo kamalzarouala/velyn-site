@@ -1,3 +1,13 @@
+## 2026-11-22T00:31Z
+- UPDATED `nhs-bacterial-vaginosis` (656 → 650 words, source reviewed 2026-06-19T09:00:00+00:00)
+- UPDATED `nhs-endometriosis` (988 → 982 words, source reviewed 2024-08-26T23:00:00+00:00)
+- UPDATED `nhs-heavy-periods` (480 → 474 words, source reviewed 2024-09-19T03:00:00+00:00)
+- UPDATED `nhs-miscarriage` (1355 → 1346 words, source reviewed 2026-03-31T00:00:00+00:00)
+- UPDATED `nhs-pre-eclampsia` (973 → 970 words, source reviewed 2026-03-23T16:02:00+00:00)
+- UPDATED `nhs-pre-menstrual-syndrome` (503 → 494 words, source reviewed 2024-06-18T00:00:00+00:00)
+- UPDATED `nhs-thrush-in-men-and-women` (732 → 726 words, source reviewed 2023-07-28T14:40:00+00:00)
+- UPDATED `nhs-urinary-tract-infections-utis` (1385 → 1373 words, source reviewed 2025-07-10T23:00:00+00:00)
+
 ## 2026-11-21T23:45Z
 - ADDED `nhs-bacterial-vaginosis`: Bacterial vaginosis
 - ADDED `nhs-endometriosis`: Endometriosis
