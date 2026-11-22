@@ -1,3 +1,7 @@
+## 2026-11-22T07:06Z
+- ADDED `nhs-period-problems`: Period problems
+- ADDED `nhs-starting-periods`: Starting your periods
+
 ## 2026-11-22T07:01Z
 - UPDATED `nhs-bacterial-vaginosis` (462 → 669 words, source reviewed 2026-06-19T09:00:00+00:00)
 - ADDED `nhs-ectopic-pregnancy`: Ectopic pregnancy
