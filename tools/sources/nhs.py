@@ -9,10 +9,14 @@ from common import get, sections_from_html, write, words
 KEY = os.environ.get('NHS_API_KEY', '')
 BASE = os.environ.get('NHS_API_BASE', 'https://int.api.service.nhs.uk/nhs-website-content')
 # Each page lists several paths: NHS moved some pages (e.g. PCOS, post-natal depression), first one that answers wins.
+# Hub pages whose text lives on sub-pages: merged into one article, each sub-page under its own heading.
+EXTRA = {'menopause': ['conditions/menopause/symptoms', 'conditions/menopause/treatment', 'conditions/menopause/things-you-can-do']}
 PAGES = [
     ('cycle', 'periods', ['conditions/periods', 'womens-health/periods']),
     ('cycle', 'heavy-periods', ['conditions/heavy-periods']),
     ('cycle', 'period-pain', ['symptoms/period-pain', 'conditions/period-pain']),
+    ('cycle', 'period-problems', ['conditions/periods/period-problems']),
+    ('cycle', 'starting-periods', ['conditions/periods/starting-periods']),
     ('cycle', 'stopped-or-missed-periods', ['symptoms/missed-or-late-periods', 'conditions/stopped-or-missed-periods']),
     ('cycle', 'irregular-periods', ['symptoms/irregular-periods', 'conditions/irregular-periods']),
     ('cycle', 'pre-menstrual-syndrome', ['conditions/pre-menstrual-syndrome']),
@@ -22,7 +26,7 @@ PAGES = [
     ('body', 'thrush-in-men-and-women', ['conditions/thrush-in-men-and-women']),
     ('body', 'bacterial-vaginosis', ['conditions/bacterial-vaginosis']),
     ('body', 'urinary-tract-infections-utis', ['conditions/urinary-tract-infections-utis']),
-    ('menopause', 'menopause', ['conditions/menopause', 'menopause', 'womens-health/menopause', 'conditions/menopause/symptoms']),
+    ('menopause', 'menopause', ['conditions/menopause']),
     ('ttc', 'infertility', ['conditions/infertility']),
     ('pregnancy', 'ectopic-pregnancy', ['conditions/ectopic-pregnancy']),
     ('pregnancy', 'miscarriage', ['conditions/miscarriage']),
@@ -137,7 +141,7 @@ if __name__ == '__main__':
             if not d: print('MISSING', slug, paths); continue
             secs = sections(d)
             if sum(len(b.get('p') or ' '.join(b.get('ul') or [])) for s in secs for b in s['blocks']) < 1500:
-                for sp in subpages(d):  # hub page: add the official sub-pages, each under its own heading
+                for sp in EXTRA.get(slug, []) + subpages(d):  # hub page: add the official sub-pages, each under its own heading
                     sd = fetch(sp); time.sleep(3)
                     if not sd: continue
                     ss = sections(sd)
